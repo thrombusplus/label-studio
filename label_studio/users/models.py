@@ -248,6 +248,33 @@ class User(UserMixin, AbstractBaseUser, PermissionsMixin, UserLastActivityMixin)
         return initials
 
 
+class PasswordResetToken(models.Model):
+    """Model for storing password reset tokens."""
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    
+    class Meta:
+        db_table = 'htx_password_reset_token'
+        verbose_name = _('password reset token')
+        verbose_name_plural = _('password reset tokens')
+        indexes = [
+            models.Index(fields=['token']),
+            models.Index(fields=['user', 'used']),
+            models.Index(fields=['expires_at']),
+        ]
+    
+    def is_valid(self):
+        """Check if token is still valid."""
+        return not self.used and timezone.now() <= self.expires_at
+    
+    def __str__(self):
+        return f"Reset token for {self.user.email} ({'used' if self.used else 'active'})"
+
+
 @receiver(post_save, sender=User)
 def init_user(sender, instance=None, created=False, **kwargs):
     if created:

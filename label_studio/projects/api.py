@@ -1068,3 +1068,96 @@ class ProjectMemberDetailAPI(generics.GenericAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
+
+@method_decorator(
+    name='post',
+    decorator=extend_schema(
+        tags=['Projects'],
+        summary='Invite new user to project',
+        description='Create a new user account with auto-generated password and add them to the project, or add an existing user to the project (admin only)',
+        extensions={
+            'x-fern-sdk-group-name': 'projects',
+            'x-fern-sdk-method-name': 'invite_member',
+            'x-fern-audiences': ['public'],
+        },
+    ),
+)
+class ProjectInviteUserAPI(generics.GenericAPIView):
+    from projects.serializers import InviteUserSerializer
+    
+    permission_required = all_permissions.projects_view
+    queryset = Project.objects.all()
+    serializer_class = InviteUserSerializer
+    
+    @admin_only
+    def post(self, request, pk, *args, **kwargs):
+        """Invite a new user or add existing user to project"""
+        from projects.models import ProjectMember
+        from users.functions.invitation import (
+            generate_secure_password,
+            send_invitation_email,
+            send_added_to_project_email,
+        )
+        
+        project = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        first_name = serializer.validated_data.get('first_name', '')
+        last_name = serializer.validated_data.get('last_name', '')
+        role = serializer.validated_data.get('role', 'annotator')
+        send_email = serializer.validated_data.get('send_email', True)
+        
+        # Check if user exists
+        user_existed = False
+        password = None
+        try:
+            user = User.objects.get(email=email)
+            user_existed = True
+        except User.DoesNotExist:
+            # Create new user with auto-generated password
+            password = generate_secure_password(length=12)
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                username=email.split('@')[0],
+                role=role
+            )
+            
+            # Add user to organization
+            project.organization.add_user(user)
+        
+        # Add user to project
+        created = project.add_collaborator(user)
+        
+        # Send appropriate email
+        if send_email:
+            try:
+                if user_existed:
+                    send_added_to_project_email(user, project, user.role, request.user)
+                else:
+                    send_invitation_email(user, password, project, request.user)
+            except Exception as e:
+                logger.error(f'Failed to send invitation email: {e}')
+                # Don't fail the request if email fails
+        
+        # Prepare response
+        member = ProjectMember.objects.get(user=user, project=project)
+        response_data = {
+            'user_id': user.id,
+            'email': user.email,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'enabled': member.enabled,
+            'created_at': member.created_at,
+            'user_existed': user_existed,
+            'message': f'User {user.email} {"added to" if user_existed else "invited to"} project'
+        }
+        
+        status_code = status.HTTP_200_OK if user_existed else status.HTTP_201_CREATED
+        return Response(response_data, status=status_code)

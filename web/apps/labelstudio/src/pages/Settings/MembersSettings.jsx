@@ -5,6 +5,7 @@ import { ApiContext } from "../../providers/ApiProvider";
 import { ProjectContext } from "../../providers/ProjectProvider";
 import { Block, Elem } from "../../utils/bem";
 import { useCurrentUserAtom } from "@humansignal/core";
+import { InviteMemberModal } from "./InviteMemberModal";
 import "./members-settings.scss";
 
 export const MembersSettings = () => {
@@ -18,6 +19,8 @@ export const MembersSettings = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   const isAdmin = currentUser?.role === "admin";
 
@@ -152,6 +155,38 @@ export const MembersSettings = () => {
     }
   };
 
+  const handleInviteUser = async (inviteData) => {
+    if (!isAdmin || !api || !project?.id) return;
+
+    try {
+      setInviteLoading(true);
+      setError(null);
+      setSuccess(null);
+
+      const response = await api.callApi("inviteProjectMember", {
+        params: { pk: project.id },
+        body: inviteData,
+      });
+
+      const message = response.user_existed
+        ? `User ${response.email} has been added to the project`
+        : `Invitation sent to ${response.email}. They will receive login credentials via email.`;
+
+      setSuccess(message);
+      setShowInviteModal(false);
+      await fetchMembers();
+    } catch (err) {
+      console.error("Error inviting user:", err);
+      const errorMessage = err?.response?.data?.error ||
+                          err?.response?.data?.detail ||
+                          err?.message ||
+                          "Failed to invite user. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
   const getRoleBadge = (role) => {
     const isAdminRole = role === "admin";
     return (
@@ -209,6 +244,16 @@ export const MembersSettings = () => {
               >
                 Add to Project
               </Button>
+              <Button
+                onClick={() => setShowInviteModal(true)}
+                disabled={loading}
+                size="small"
+                look="primary"
+                aria-label="Invite new user"
+                leading={<IconUserAdd />}
+              >
+                Invite New User
+              </Button>
             </Elem>
             {availableUsers.length === 0 && members.length > 0 && (
               <Typography size="small" className="text-neutral-content-subtler mt-2">
@@ -217,6 +262,13 @@ export const MembersSettings = () => {
             )}
           </Block>
         )}
+
+        <InviteMemberModal
+          visible={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+          onInvite={handleInviteUser}
+          loading={inviteLoading}
+        />
 
         <Block name="members-list">
           <Elem name="title">Current Members ({members.length})</Elem>

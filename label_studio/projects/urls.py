@@ -50,6 +50,8 @@ _api_urlpatterns = [
     # Project members management
     path('<int:pk>/members/', api.ProjectMembersAPI.as_view(), name='project-members'),
     path('<int:pk>/members/<int:user_id>/', api.ProjectMemberDetailAPI.as_view(), name='project-member-detail'),
+    # Invite new user to project
+    path('<int:pk>/invite-member/', api.ProjectInviteUserAPI.as_view(), name='project-invite-member'),
 ]
 
 _api_urlpatterns_templates = [

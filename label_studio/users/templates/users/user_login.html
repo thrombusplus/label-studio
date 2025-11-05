@@ -17,6 +17,9 @@
       <label for="persist_session">Keep me logged in this browser</label>
     </p>
     <p><button type="submit" aria-label="Log In" class="lsf-button-ls lsf-button-ls_look_primary">Log in</button></p>
+    <p style="text-align: center; margin-top: 1rem;">
+      <a href="{% url 'password-reset-request' %}" style="color: #0066cc; text-decoration: none;">Forgot your password?</a>
+    </p>
   </form>
 
 {% endblock %}

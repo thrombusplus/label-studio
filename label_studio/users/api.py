@@ -421,3 +421,155 @@ class UserHotkeysAPI(APIView):
         except Exception as e:
             logger.error(f'Error updating hotkeys for user {request.user.pk}: {str(e)}')
             return Response({'error': 'Failed to update hotkeys configuration'}, status=500)
+
+
+@method_decorator(
+    name='post',
+    decorator=extend_schema(
+        tags=['Users'],
+        summary='Request password reset',
+        description='Request a password reset email for a user account.',
+        request={'application/json': {'type': 'object', 'properties': {'email': {'type': 'string'}}}},
+        responses={
+            200: OpenApiResponse(description='Password reset email sent'),
+            400: OpenApiResponse(description='Invalid request'),
+        },
+        extensions={
+            'x-fern-sdk-group-name': 'users',
+            'x-fern-sdk-method-name': 'request_password_reset',
+            'x-fern-audiences': ['public'],
+        },
+    ),
+)
+class PasswordResetRequestAPI(APIView):
+    """API endpoint to request a password reset email."""
+    permission_classes = []  # No authentication required
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+    
+    def post(self, request, *args, **kwargs):
+        from users.serializers import PasswordResetRequestSerializer
+        from users.functions.password_reset import create_reset_token, send_password_reset_email
+        
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        
+        try:
+            user = User.objects.get(email=email, is_active=True)
+            
+            # Create reset token
+            reset_token = create_reset_token(user)
+            
+            # Send email
+            try:
+                send_password_reset_email(user, reset_token.token)
+                logger.info(f'Password reset requested for user {user.email}')
+            except Exception as e:
+                logger.error(f'Failed to send password reset email: {e}')
+                return Response(
+                    {'error': 'Failed to send password reset email. Please try again later.'},
+                    status=500
+                )
+            
+        except User.DoesNotExist:
+            # Don't reveal whether user exists for security
+            logger.info(f'Password reset requested for non-existent email: {email}')
+        
+        # Always return success to prevent email enumeration
+        return Response(
+            {'message': 'If an account exists with this email, a password reset link has been sent.'},
+            status=200
+        )
+
+
+@method_decorator(
+    name='post',
+    decorator=extend_schema(
+        tags=['Users'],
+        summary='Validate password reset token',
+        description='Validate a password reset token.',
+        request={'application/json': {'type': 'object', 'properties': {'token': {'type': 'string'}}}},
+        responses={
+            200: OpenApiResponse(description='Token is valid'),
+            400: OpenApiResponse(description='Token is invalid or expired'),
+        },
+        extensions={
+            'x-fern-sdk-group-name': 'users',
+            'x-fern-sdk-method-name': 'validate_password_reset_token',
+            'x-fern-audiences': ['public'],
+        },
+    ),
+)
+class PasswordResetValidateAPI(APIView):
+    """API endpoint to validate a password reset token."""
+    permission_classes = []  # No authentication required
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+    
+    def post(self, request, *args, **kwargs):
+        from users.serializers import PasswordResetValidateSerializer
+        from users.functions.password_reset import validate_reset_token
+        
+        serializer = PasswordResetValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        token = serializer.validated_data['token']
+        is_valid, result = validate_reset_token(token)
+        
+        if is_valid:
+            return Response({'valid': True}, status=200)
+        else:
+            return Response({'valid': False, 'error': result}, status=400)
+
+
+@method_decorator(
+    name='post',
+    decorator=extend_schema(
+        tags=['Users'],
+        summary='Confirm password reset',
+        description='Reset password using a valid token.',
+        request={
+            'application/json': {
+                'type': 'object',
+                'properties': {
+                    'token': {'type': 'string'},
+                    'password': {'type': 'string'},
+                    'password_confirm': {'type': 'string'},
+                },
+            }
+        },
+        responses={
+            200: OpenApiResponse(description='Password reset successful'),
+            400: OpenApiResponse(description='Invalid token or password'),
+        },
+        extensions={
+            'x-fern-sdk-group-name': 'users',
+            'x-fern-sdk-method-name': 'confirm_password_reset',
+            'x-fern-audiences': ['public'],
+        },
+    ),
+)
+class PasswordResetConfirmAPI(APIView):
+    """API endpoint to confirm password reset with new password."""
+    permission_classes = []  # No authentication required
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+    
+    def post(self, request, *args, **kwargs):
+        from users.serializers import PasswordResetConfirmSerializer
+        from users.functions.password_reset import reset_user_password
+        
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['password']
+        
+        success, result = reset_user_password(token, new_password)
+        
+        if success:
+            return Response(
+                {'message': 'Password has been reset successfully. You can now log in with your new password.'},
+                status=200
+            )
+        else:
+            return Response({'error': result}, status=400)

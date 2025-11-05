@@ -456,3 +456,32 @@ class AddProjectMemberSerializer(serializers.Serializer):
             raise serializers.ValidationError('Either user_id or email must be provided')
         return data
 
+
+class InviteUserSerializer(serializers.Serializer):
+    """Serializer for inviting a new user to a project"""
+    email = serializers.EmailField(required=True, help_text='User email to invite')
+    first_name = serializers.CharField(
+        required=False, 
+        allow_blank=True, 
+        max_length=256,
+        help_text='User first name'
+    )
+    last_name = serializers.CharField(
+        required=False, 
+        allow_blank=True, 
+        max_length=256,
+        help_text='User last name'
+    )
+    role = serializers.ChoiceField(
+        choices=['admin', 'annotator'],
+        default='annotator',
+        help_text='User role in the system'
+    )
+    send_email = serializers.BooleanField(
+        default=True, 
+        help_text='Send invitation email to the user'
+    )
+    
+    def validate_email(self, value):
+        """Normalize email to lowercase"""
+        return value.lower()

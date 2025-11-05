@@ -5,7 +5,7 @@ from core.utils.common import load_func
 from django.conf import settings
 from rest_flex_fields import FlexFieldsModelSerializer
 from rest_framework import serializers
-from users.models import User
+from users.models import User, PasswordResetToken
 
 
 class BaseUserSerializer(FlexFieldsModelSerializer):
@@ -233,6 +233,41 @@ class HotkeysSerializer(serializers.Serializer):
         for part in parts[:-1]:  # All parts except the last should be modifiers or valid keys
             if part.lower() not in valid_modifiers and len(part) > 20:
                 raise serializers.ValidationError(f"Invalid modifier or key '{part}' in key combination '{key_combo}'")
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """Serializer for requesting a password reset."""
+    email = serializers.EmailField(required=True, help_text='Email address of the account')
+    
+    def validate_email(self, value):
+        """Normalize email to lowercase."""
+        return value.lower()
+
+
+class PasswordResetValidateSerializer(serializers.Serializer):
+    """Serializer for validating a password reset token."""
+    token = serializers.CharField(required=True, help_text='Password reset token')
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """Serializer for confirming password reset with new password."""
+    token = serializers.CharField(required=True, help_text='Password reset token')
+    password = serializers.CharField(
+        required=True,
+        min_length=settings.AUTH_PASSWORD_MIN_LENGTH,
+        max_length=settings.AUTH_PASSWORD_MAX_LENGTH,
+        help_text='New password'
+    )
+    password_confirm = serializers.CharField(
+        required=True,
+        help_text='Confirm new password'
+    )
+    
+    def validate(self, data):
+        """Validate that passwords match."""
+        if data['password'] != data['password_confirm']:
+            raise serializers.ValidationError({'password_confirm': 'Passwords do not match'})
+        return data
 
 
 UserSerializer = load_func(settings.USER_SERIALIZER)

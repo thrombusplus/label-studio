@@ -26,6 +26,12 @@ export const API_CONFIG = {
     projectMembers: "/projects/:pk/members",
     addProjectMember: "POST:/projects/:pk/members",
     removeProjectMember: "DELETE:/projects/:pk/members/:userId",
+    inviteProjectMember: "POST:/projects/:pk/invite-member",
+
+    // Password reset
+    passwordResetRequest: "POST:/password-reset/request",
+    passwordResetValidate: "POST:/password-reset/validate",
+    passwordResetConfirm: "POST:/password-reset/confirm",
 
     // Presigning
     presignUrlForTask: "/../tasks/:taskID/presign",

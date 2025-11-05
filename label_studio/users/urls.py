@@ -21,6 +21,9 @@ urlpatterns = [
     path('user/account/', views.user_account, name='user-account'),
     path('user/account/<sub_path>', views.user_account, name='user-account-anything'),
     re_path(r'^logout/?$', views.logout, name='logout'),
+    # Password reset
+    path('user/password-reset/', views.password_reset_request, name='password-reset-request'),
+    path('user/password-reset/<str:token>/', views.password_reset_confirm, name='password-reset-confirm'),
     # Token
     path('api/current-user/reset-token/', api.UserResetTokenAPI.as_view(), name='current-user-reset-token'),
     path('api/current-user/token', api.UserGetTokenAPI.as_view(), name='current-user-token'),
@@ -28,6 +31,10 @@ urlpatterns = [
     # Product tours
     path('api/current-user/product-tour', product_tours_api.ProductTourAPI.as_view(), name='product-tour'),
     path('api/current-user/hotkeys/', api.UserHotkeysAPI.as_view(), name='current-user-hotkeys'),
+    # Password reset
+    path('api/password-reset/request/', api.PasswordResetRequestAPI.as_view(), name='password-reset-request'),
+    path('api/password-reset/validate/', api.PasswordResetValidateAPI.as_view(), name='password-reset-validate'),
+    path('api/password-reset/confirm/', api.PasswordResetConfirmAPI.as_view(), name='password-reset-confirm'),
 ]
 
 # When CLOUD_FILE_STORAGE_ENABLED is set, avatars are uploaded to cloud storage with a different URL pattern.

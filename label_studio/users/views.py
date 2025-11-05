@@ -141,6 +141,96 @@ def user_login(request):
     return render(request, 'users/user_login.html', {'form': form, 'next': quote(next_page)})
 
 
+def password_reset_request(request):
+    """Password reset request page."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        
+        if not email:
+            return render(request, 'users/password_reset_request.html', {
+                'error': 'Please enter an email address.'
+            })
+        
+        try:
+            from users.functions.password_reset import create_reset_token, send_password_reset_email
+            from users.models import User
+            
+            try:
+                user = User.objects.get(email=email, is_active=True)
+                reset_token = create_reset_token(user)
+                send_password_reset_email(user, reset_token.token)
+            except User.DoesNotExist:
+                # Don't reveal if user exists
+                pass
+            
+            # Always show success message
+            return render(request, 'users/password_reset_request.html', {
+                'success': True
+            })
+            
+        except Exception as e:
+            logger.error(f'Error in password reset request: {e}')
+            return render(request, 'users/password_reset_request.html', {
+                'error': 'An error occurred. Please try again later.'
+            })
+    
+    return render(request, 'users/password_reset_request.html')
+
+
+def password_reset_confirm(request, token):
+    """Password reset confirmation page."""
+    from users.functions.password_reset import validate_reset_token, reset_user_password
+    
+    # Validate token first
+    is_valid, result = validate_reset_token(token)
+    
+    if not is_valid:
+        return render(request, 'users/password_reset_confirm.html', {
+            'invalid_token': True,
+            'error': result
+        })
+    
+    if request.method == 'POST':
+        password = request.POST.get('password', '')
+        password_confirm = request.POST.get('password_confirm', '')
+        
+        # Validate passwords
+        if not password or not password_confirm:
+            return render(request, 'users/password_reset_confirm.html', {
+                'error': 'Please fill in all fields.',
+                'token': token
+            })
+        
+        if password != password_confirm:
+            return render(request, 'users/password_reset_confirm.html', {
+                'error': 'Passwords do not match.',
+                'token': token
+            })
+        
+        if len(password) < settings.AUTH_PASSWORD_MIN_LENGTH:
+            return render(request, 'users/password_reset_confirm.html', {
+                'error': f'Password must be at least {settings.AUTH_PASSWORD_MIN_LENGTH} characters long.',
+                'token': token
+            })
+        
+        # Reset password
+        success, result = reset_user_password(token, password)
+        
+        if success:
+            return render(request, 'users/password_reset_confirm.html', {
+                'success': True
+            })
+        else:
+            return render(request, 'users/password_reset_confirm.html', {
+                'error': result,
+                'token': token
+            })
+    
+    return render(request, 'users/password_reset_confirm.html', {
+        'token': token
+    })
+
+
 @login_required
 def user_account(request, sub_path=None):
     """
