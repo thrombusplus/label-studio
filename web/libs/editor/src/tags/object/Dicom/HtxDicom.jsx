@@ -23,12 +23,15 @@ const FrameControls = observer(({ item }) => {
     item.nextFrame();
   }, [item]);
 
-  const handleFrameChange = useCallback((e) => {
-    const frame = parseInt(e.target.value, 10);
-    if (!isNaN(frame)) {
-      item.setFrame(frame);
-    }
-  }, [item]);
+  const handleFrameChange = useCallback(
+    (e) => {
+      const frame = parseInt(e.target.value, 10);
+      if (!isNaN(frame)) {
+        item.setFrame(frame);
+      }
+    },
+    [item],
+  );
 
   if (!item.isMultiFrame) return null;
 
@@ -52,7 +55,8 @@ const FrameControls = observer(({ item }) => {
           onChange={handleFrameChange}
           className="dicom-viewer__frame-input"
         />
-        {" / "}{item.length}
+        {" / "}
+        {item.length}
       </span>
       <button
         className="dicom-viewer__frame-btn"
@@ -68,17 +72,22 @@ const FrameControls = observer(({ item }) => {
 
 // Window presets dropdown
 const WindowPresets = observer(({ item }) => {
-  const handlePresetChange = useCallback((e) => {
-    const preset = e.target.value;
-    if (preset) {
-      item.applyWindowPreset(preset);
-    }
-  }, [item]);
+  const handlePresetChange = useCallback(
+    (e) => {
+      const preset = e.target.value;
+      if (preset) {
+        item.applyWindowPreset(preset);
+      }
+    },
+    [item],
+  );
 
   return (
     <Elem name="window-presets">
       <select onChange={handlePresetChange} defaultValue="">
-        <option value="" disabled>Window Presets</option>
+        <option value="" disabled>
+          Window Presets
+        </option>
         <optgroup label="CT">
           <option value="bone">Bone</option>
           <option value="lung">Lung</option>
@@ -231,7 +240,6 @@ export const HtxDicomView = observer(({ item, store }) => {
 
         // Load the DICOM file
         app.loadURLs([src]);
-
       } catch (err) {
         console.error("Failed to load dwv:", err);
         setError("Failed to initialize DICOM viewer");
@@ -274,27 +282,32 @@ export const HtxDicomView = observer(({ item, store }) => {
   }, [item.windowCenter, item.windowWidth, item.dicomIsLoaded]);
 
   // Extract rendered image from dwv canvas
-  const updateCanvasImage = useCallback((app) => {
-    try {
-      const layerGroup = app.getLayerGroupByDivId?.(`dwv-container-${item.name}`);
-      if (layerGroup) {
-        const viewLayer = layerGroup.getActiveViewLayer?.();
-        if (viewLayer) {
-          const canvas = viewLayer.getCanvas?.();
-          if (canvas) {
-            // Create image from canvas for Konva
-            const imageObj = new Image();
-            imageObj.src = canvas.toDataURL();
-            imageObj.onload = () => {
-              setDicomImage(imageObj);
-            };
+  const updateCanvasImage = useCallback(
+    (app) => {
+      try {
+        const layerGroup = app.getLayerGroupByDivId?.(
+          `dwv-container-${item.name}`,
+        );
+        if (layerGroup) {
+          const viewLayer = layerGroup.getActiveViewLayer?.();
+          if (viewLayer) {
+            const canvas = viewLayer.getCanvas?.();
+            if (canvas) {
+              // Create image from canvas for Konva
+              const imageObj = new Image();
+              imageObj.src = canvas.toDataURL();
+              imageObj.onload = () => {
+                setDicomImage(imageObj);
+              };
+            }
           }
         }
+      } catch (err) {
+        console.warn("Failed to extract DICOM image:", err);
       }
-    } catch (err) {
-      console.warn("Failed to extract DICOM image:", err);
-    }
-  }, [item.name]);
+    },
+    [item.name],
+  );
 
   // Keyboard shortcuts for frame navigation
   useEffect(() => {
@@ -373,10 +386,7 @@ export const HtxDicomView = observer(({ item, store }) => {
           )}
 
           {/* Hidden dwv container for DICOM parsing */}
-          <div
-            id={`dwv-container-${item.name}`}
-            style={{ display: "none" }}
-          />
+          <div id={`dwv-container-${item.name}`} style={{ display: "none" }} />
 
           {/* Konva stage for annotations */}
           {!loading && item.dicomIsLoaded && (
@@ -404,19 +414,18 @@ export const HtxDicomView = observer(({ item, store }) => {
               </Layer>
 
               {/* Regions layer */}
-              <Layer
-                name="regions"
-                {...item.layerZoomScalePosition}
-              >
-                <DicomRegions item={item} width={stageWidth} height={stageHeight} />
+              <Layer name="regions" {...item.layerZoomScalePosition}>
+                <DicomRegions
+                  item={item}
+                  width={stageWidth}
+                  height={stageHeight}
+                />
               </Layer>
             </Stage>
           )}
 
           {/* Toolbar */}
-          {item.hasTools && (
-            <Toolbar item={item} />
-          )}
+          {item.hasTools && <Toolbar item={item} />}
         </Elem>
 
         {/* Frame timeline for multi-frame DICOM */}

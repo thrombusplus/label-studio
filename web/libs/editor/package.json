@@ -37,7 +37,6 @@
     "react-virtualized-auto-sizer": "^1.0.20",
     "react-window": "^1.8.9",
     "sanitize-html": "^2.12.1",
-
     "webfft": "^1.0.3",
     "xpath-range": "^1.1.1"
   },

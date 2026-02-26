@@ -61,6 +61,10 @@ const HtxDicomPolygonLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("dicompolygonlabels", DicomPolygonLabelsModel, HtxDicomPolygonLabels);
+Registry.addTag(
+  "dicompolygonlabels",
+  DicomPolygonLabelsModel,
+  HtxDicomPolygonLabels,
+);
 
 export { HtxDicomPolygonLabels, DicomPolygonLabelsModel };

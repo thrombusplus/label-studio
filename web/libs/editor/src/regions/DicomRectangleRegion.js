@@ -46,7 +46,10 @@ const Model = types
       self.rotation = (rotation + 360) % 360;
 
       if (self.isMultiFrame) {
-        self.updateShape({ x, y, width, height, rotation: self.rotation }, self.currentFrame);
+        self.updateShape(
+          { x, y, width, height, rotation: self.rotation },
+          self.currentFrame,
+        );
       }
     },
 

@@ -188,7 +188,9 @@ const Model = types
         self.sequence = [
           ...self.sequence.slice(0, index),
           keypoint,
-          ...self.sequence.slice(index + (self.sequence[index].frame === frame ? 1 : 0)),
+          ...self.sequence.slice(
+            index + (self.sequence[index].frame === frame ? 1 : 0),
+          ),
         ];
       }
     },

@@ -22,7 +22,12 @@ export const DicomEntityMixin = types
 
     get dicomIsLoaded() {
       const entity = self.currentDicomEntity;
-      return !entity?.downloading && !entity?.error && entity?.downloaded && entity?.dicomLoaded;
+      return (
+        !entity?.downloading &&
+        !entity?.error &&
+        entity?.downloaded &&
+        entity?.dicomLoaded
+      );
     },
 
     get naturalWidth() {

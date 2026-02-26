@@ -31,8 +31,10 @@ const Model = types
 
       if (!pts || pts.length === 0) return null;
 
-      let minX = Infinity, minY = Infinity;
-      let maxX = -Infinity, maxY = -Infinity;
+      let minX = Infinity,
+        minY = Infinity;
+      let maxX = -Infinity,
+        maxY = -Infinity;
 
       for (const pt of pts) {
         minX = Math.min(minX, pt.x);

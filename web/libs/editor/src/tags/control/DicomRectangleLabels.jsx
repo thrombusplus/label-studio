@@ -59,6 +59,10 @@ const HtxDicomRectangleLabels = observer(({ item }) => {
   return <HtxLabels item={item} />;
 });
 
-Registry.addTag("dicomrectanglelabels", DicomRectangleLabelsModel, HtxDicomRectangleLabels);
+Registry.addTag(
+  "dicomrectanglelabels",
+  DicomRectangleLabelsModel,
+  HtxDicomRectangleLabels,
+);
 
 export { HtxDicomRectangleLabels, DicomRectangleLabelsModel };

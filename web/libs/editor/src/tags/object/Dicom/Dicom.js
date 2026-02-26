@@ -89,8 +89,14 @@ const TagAttrs = types.model({
   defaultwindowwidth: types.optional(types.string, "400"),
 
   // Alignment
-  horizontalalignment: types.optional(types.enumeration(["left", "center", "right"]), "center"),
-  verticalalignment: types.optional(types.enumeration(["top", "center", "bottom"]), "center"),
+  horizontalalignment: types.optional(
+    types.enumeration(["left", "center", "right"]),
+    "center",
+  ),
+  verticalalignment: types.optional(
+    types.enumeration(["top", "center", "bottom"]),
+    "center",
+  ),
 });
 
 const DICOM_CONSTANTS = {
@@ -122,7 +128,10 @@ const Model = types
     /**
      * Mode: drawing, viewing, brush, eraser
      */
-    mode: types.optional(types.enumeration(["drawing", "viewing", "brush", "eraser"]), "viewing"),
+    mode: types.optional(
+      types.enumeration(["drawing", "viewing", "brush", "eraser"]),
+      "viewing",
+    ),
 
     /**
      * Regions on this DICOM image
@@ -234,7 +243,11 @@ const Model = types
     },
 
     get suggestions() {
-      return self.annotation?.regionStore.suggestions.filter((r) => r.object === self) || [];
+      return (
+        self.annotation?.regionStore.suggestions.filter(
+          (r) => r.object === self,
+        ) || []
+      );
     },
 
     /**
@@ -246,7 +259,10 @@ const Model = types
 
     activeStates() {
       const states = self.states();
-      return states && states.filter((s) => s.isSelected && s.type.includes("labels"));
+      return (
+        states &&
+        states.filter((s) => s.isSelected && s.type.includes("labels"))
+      );
     },
 
     controlButton() {
@@ -316,7 +332,7 @@ const Model = types
     get maxScale() {
       return Math.min(
         self.containerWidth / self.naturalWidth,
-        self.containerHeight / self.naturalHeight
+        self.containerHeight / self.naturalHeight,
       );
     },
 
@@ -355,7 +371,9 @@ const Model = types
 
       self.dicomEntities.clear();
 
-      const parsedValue = self.multiDicom ? self.parsedValueList : self.parsedValue;
+      const parsedValue = self.multiDicom
+        ? self.parsedValueList
+        : self.parsedValue;
       const idPostfix = self.annotation ? `@${self.annotation.id}` : "";
 
       if (Array.isArray(parsedValue)) {
@@ -385,20 +403,36 @@ const Model = types
       if (!self.annotation) return;
 
       if (self.selectioncontrol) {
-        manager.addTool("MoveTool", Tools.Selection.create({}, env), "MoveTool");
+        manager.addTool(
+          "MoveTool",
+          Tools.Selection.create({}, env),
+          "MoveTool",
+        );
       }
 
       // Only add zoom tool if explicitly enabled
       if (self.zoomcontrol && self.zoom) {
-        manager.addTool("ZoomPanTool", Tools.Zoom.create({}, env), "ZoomPanTool");
+        manager.addTool(
+          "ZoomPanTool",
+          Tools.Zoom.create({}, env),
+          "ZoomPanTool",
+        );
       }
 
       if (self.brightnesscontrol) {
-        manager.addTool("BrightnessTool", Tools.Brightness.create({}, env), "BrightnessTool");
+        manager.addTool(
+          "BrightnessTool",
+          Tools.Brightness.create({}, env),
+          "BrightnessTool",
+        );
       }
 
       if (self.contrastcontrol) {
-        manager.addTool("ContrastTool", Tools.Contrast.create({}, env), "ContrastTool");
+        manager.addTool(
+          "ContrastTool",
+          Tools.Contrast.create({}, env),
+          "ContrastTool",
+        );
       }
 
       createDicomEntities();
@@ -560,7 +594,7 @@ const Model = types
             { ...region.serialize().value, frame },
             region.labeling,
             region.from_name,
-            self
+            self,
           );
           results.push(newRegion);
         }
