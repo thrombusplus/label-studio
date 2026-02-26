@@ -1,0 +1,37 @@
+title: DICOM Multi-Frame Segmentation
+type: community
+group: Computer Vision
+image: /static/templates/dicom-segmentation.png
+details: |
+  <h1>Segment DICOM medical images across multiple frames/slices</h1>
+  <dl>
+    <dt>Industry Applications</dt>
+    <dd>radiology, radiation oncology, surgical planning, organ segmentation, tumor volumetrics, 3D reconstruction, treatment planning, dose calculation, CT colonography, cardiac CT, brain MRI, liver segmentation, lung nodule analysis</dd>
+    <dt>Domain Terminology</dt>
+    <dd>volumetric segmentation, contour propagation, slice-by-slice annotation, organ delineation, gross tumor volume, clinical target volume, planning target volume, isodose curves</dd>
+    <dt>Regulatory</dt>
+    <dd>FDA 510(k), CE marking, medical device software, clinical validation, HIPAA compliance, patient data protection</dd>
+  </dl>
+config: |
+  <View>
+    <Header value="DICOM Multi-Frame Segmentation"/>
+    
+    <Dicom name="dicom" value="$dicom_url" 
+           brightnessControl="true" 
+           contrastControl="true"
+           defaultWindowCenter="40"
+           defaultWindowWidth="400"/>
+    
+    <DicomBrushLabels name="segmentation" toName="dicom">
+      <Label value="Liver" background="#8B4513"/>
+      <Label value="Kidney" background="#DC143C"/>
+      <Label value="Spleen" background="#9370DB"/>
+      <Label value="Tumor" background="#FF6347"/>
+      <Label value="Vessel" background="#4169E1"/>
+    </DicomBrushLabels>
+    
+    <DicomPolygonLabels name="outline" toName="dicom">
+      <Label value="Organ Boundary" background="#00CED1"/>
+      <Label value="Lesion Boundary" background="#FF4500"/>
+    </DicomPolygonLabels>
+  </View>

@@ -17,6 +17,12 @@ import { TimelineRegionModel } from "./TimelineRegion";
 import { VideoRectangleRegionModel } from "./VideoRectangleRegion";
 import { CustomRegionModel } from "./CustomRegion";
 
+// DICOM region models
+import { DicomRegion } from "./DicomRegion";
+import { DicomBrushRegionModel } from "./DicomBrushRegion";
+import { DicomPolygonRegionModel } from "./DicomPolygonRegion";
+import { DicomRectangleRegionModel } from "./DicomRectangleRegion";
+
 const AllRegionsType = types.union(
   AudioRegionModel,
   BrushRegionModel,
@@ -34,6 +40,10 @@ const AllRegionsType = types.union(
   ParagraphsRegionModel,
   VideoRectangleRegionModel,
   CustomRegionModel,
+  // DICOM regions
+  DicomBrushRegionModel,
+  DicomPolygonRegionModel,
+  DicomRectangleRegionModel,
   ...Registry.customTags.map((t) => t.region).filter(Boolean),
 );
 
@@ -63,4 +73,9 @@ export {
   TimelineRegionModel,
   VideoRectangleRegionModel,
   CustomRegionModel,
+  // DICOM regions
+  DicomRegion,
+  DicomBrushRegionModel,
+  DicomPolygonRegionModel,
+  DicomRectangleRegionModel,
 };

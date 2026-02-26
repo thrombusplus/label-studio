@@ -34,6 +34,11 @@ import { RectangleModel } from "./Rectangle";
 import { RelationsModel } from "./Relations";
 import { RelationModel } from "./Relation";
 
+// DICOM-specific control tags
+import { DicomBrushLabelsModel } from "./DicomBrushLabels";
+import { DicomPolygonLabelsModel } from "./DicomPolygonLabels";
+import { DicomRectangleLabelsModel } from "./DicomRectangleLabels";
+
 export {
   ChoicesModel,
   DateTimeModel,
@@ -67,4 +72,8 @@ export {
   RectangleModel,
   RelationsModel,
   RelationModel,
+  // DICOM control tags
+  DicomBrushLabelsModel,
+  DicomPolygonLabelsModel,
+  DicomRectangleLabelsModel,
 };

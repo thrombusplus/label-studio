@@ -486,6 +486,8 @@ SUPPORTED_EXTENSIONS = set(
     [
         '.bmp',
         '.csv',
+        '.dcm',
+        '.dicom',
         '.flac',
         '.gif',
         '.htm',
