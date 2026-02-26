@@ -1,4 +1,5 @@
 import { AudioModel } from "./Audio";
+import { DicomModel } from "./Dicom";
 import { ImageModel } from "./Image";
 import { ParagraphsModel } from "./Paragraphs";
 import { PdfModel } from "./Pdf";
@@ -15,6 +16,7 @@ import "./Text";
 
 export {
   AudioModel,
+  DicomModel,
   ImageModel,
   ParagraphsModel,
   TimeSeriesModel,

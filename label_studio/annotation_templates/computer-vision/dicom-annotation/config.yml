@@ -1,0 +1,39 @@
+title: DICOM Medical Image Annotation
+type: community
+group: Computer Vision
+image: /static/templates/dicom-annotation.png
+details: |
+  <h1>Annotate DICOM medical images with multi-frame support</h1>
+  <dl>
+    <dt>Industry Applications</dt>
+    <dd>radiology, pathology, oncology, diagnostic imaging, medical diagnosis, clinical decision support, medical AI, healthcare AI, CT scan, MRI, X-ray, ultrasound, mammography, PET scan, nuclear medicine, interventional radiology, cardiac imaging, neuroimaging, musculoskeletal imaging</dd>
+    <dt>Domain Terminology</dt>
+    <dd>DICOM, PACS, RIS, windowing, window level, window width, Hounsfield units, slice thickness, multi-planar reconstruction, segmentation, contouring, ROI, region of interest, lesion detection, tumor segmentation</dd>
+    <dt>Regulatory</dt>
+    <dd>FDA approval, medical device, clinical validation, HIPAA compliance, patient privacy, de-identification, anonymization</dd>
+  </dl>
+config: |
+  <View>
+    <Header value="DICOM Medical Image Annotation"/>
+    
+    <Dicom name="dicom" value="$dicom_url" 
+           brightnessControl="true" 
+           contrastControl="true"/>
+    
+    <DicomRectangleLabels name="bbox" toName="dicom">
+      <Label value="Tumor" background="#FF0000"/>
+      <Label value="Lesion" background="#FFA500"/>
+      <Label value="Nodule" background="#FFFF00"/>
+      <Label value="Normal" background="#00FF00"/>
+    </DicomRectangleLabels>
+    
+    <Choices name="finding" toName="dicom" choice="single">
+      <Choice value="Abnormal"/>
+      <Choice value="Normal"/>
+      <Choice value="Indeterminate"/>
+    </Choices>
+    
+    <TextArea name="notes" toName="dicom" 
+              placeholder="Clinical notes and observations..."
+              rows="3"/>
+  </View>
